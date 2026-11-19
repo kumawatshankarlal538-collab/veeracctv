@@ -1,0 +1,325 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Primitive Helpers ---
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isBootstrappedAdminEmail() {
+      return isVerified() && request.auth.token.email == 'kumawatshankarlal538@gmail.com';
+    }
+
+    function isAdmin() {
+      return isBootstrappedAdminEmail() ||
+        (isVerified() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+    }
+
+    function isOwner(userId) {
+      return isVerified() && request.auth.uid == userId;
+    }
+
+    // --- Validation Blueprints ---
+    function isValidService(data, docId) {
+      return data.keys().hasAll(['id', 'title', 'description', 'icon', 'category', 'features', 'imageUrl', 'order', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'title', 'description', 'icon', 'category', 'features', 'imageUrl', 'order', 'createdAt', 'updatedAt']) &&
+        data.id == docId &&
+        isValidId(data.id) &&
+        data.title is string && data.title.size() >= 2 && data.title.size() <= 100 &&
+        data.description is string && data.description.size() >= 10 && data.description.size() <= 600 &&
+        data.icon is string && data.icon.size() >= 2 && data.icon.size() <= 40 &&
+        data.category is string && data.category.size() >= 2 && data.category.size() <= 60 &&
+        data.features is list && data.features.size() <= 8 &&
+        (data.features.size() == 0 || (data.features[0] is string && data.features[0].size() <= 120)) &&
+        data.imageUrl is string && data.imageUrl.size() >= 1 && data.imageUrl.size() <= 1000 &&
+        data.order is number && data.order >= 0 && data.order <= 1000 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidProduct(data, docId) {
+      return data.keys().hasAll(['id', 'name', 'brand', 'category', 'resolution', 'price', 'description', 'specs', 'imageUrl', 'inStock', 'featured', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'name', 'brand', 'category', 'resolution', 'price', 'description', 'specs', 'imageUrl', 'inStock', 'featured', 'createdAt', 'updatedAt']) &&
+        data.id == docId &&
+        isValidId(data.id) &&
+        data.name is string && data.name.size() >= 2 && data.name.size() <= 120 &&
+        data.brand is string && data.brand.size() >= 2 && data.brand.size() <= 60 &&
+        data.category in ['Dome Camera', 'Bullet Camera', 'PTZ Camera', 'NVR / DVR', 'Complete Kit', 'Access Control'] &&
+        data.resolution is string && data.resolution.size() >= 2 && data.resolution.size() <= 40 &&
+        data.price is number && data.price >= 0 && data.price <= 10000000 &&
+        data.description is string && data.description.size() >= 10 && data.description.size() <= 1000 &&
+        data.specs is list && data.specs.size() <= 10 &&
+        (data.specs.size() == 0 || (data.specs[0] is string && data.specs[0].size() <= 120)) &&
+        data.imageUrl is string && data.imageUrl.size() >= 1 && data.imageUrl.size() <= 1000 &&
+        data.inStock is bool &&
+        data.featured is bool &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidBrand(data, docId) {
+      return data.keys().hasAll(['id', 'name', 'tagline', 'description', 'imageUrl', 'country', 'warrantyYears', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'name', 'tagline', 'description', 'imageUrl', 'country', 'warrantyYears', 'createdAt', 'updatedAt']) &&
+        data.id == docId &&
+        isValidId(data.id) &&
+        data.name is string && data.name.size() >= 2 && data.name.size() <= 60 &&
+        data.tagline is string && data.tagline.size() >= 2 && data.tagline.size() <= 140 &&
+        data.description is string && data.description.size() >= 5 && data.description.size() <= 500 &&
+        data.imageUrl is string && data.imageUrl.size() >= 1 && data.imageUrl.size() <= 1000 &&
+        data.country is string && data.country.size() >= 2 && data.country.size() <= 60 &&
+        data.warrantyYears is number && data.warrantyYears >= 0 && data.warrantyYears <= 25 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidProject(data, docId) {
+      return data.keys().hasAll(['id', 'title', 'industry', 'location', 'camerasInstalled', 'completionYear', 'summary', 'outcomeMetric', 'imageUrl', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'title', 'industry', 'location', 'camerasInstalled', 'completionYear', 'summary', 'outcomeMetric', 'imageUrl', 'createdAt', 'updatedAt']) &&
+        data.id == docId &&
+        isValidId(data.id) &&
+        data.title is string && data.title.size() >= 2 && data.title.size() <= 120 &&
+        data.industry in ['Hotel', 'Property', 'Distribution', 'Schools', 'Industrial', 'Retail'] &&
+        data.location is string && data.location.size() >= 2 && data.location.size() <= 100 &&
+        data.camerasInstalled is number && data.camerasInstalled >= 1 && data.camerasInstalled <= 100000 &&
+        data.completionYear is string && data.completionYear.size() >= 4 && data.completionYear.size() <= 10 &&
+        data.summary is string && data.summary.size() >= 10 && data.summary.size() <= 800 &&
+        data.outcomeMetric is string && data.outcomeMetric.size() >= 2 && data.outcomeMetric.size() <= 120 &&
+        data.imageUrl is string && data.imageUrl.size() >= 1 && data.imageUrl.size() <= 1000 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidTestimonial(data, docId) {
+      return data.keys().hasAll(['id', 'clientName', 'role', 'company', 'quote', 'rating', 'projectType', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'clientName', 'role', 'company', 'quote', 'rating', 'projectType', 'createdAt', 'updatedAt']) &&
+        data.id == docId &&
+        isValidId(data.id) &&
+        data.clientName is string && data.clientName.size() >= 2 && data.clientName.size() <= 80 &&
+        data.role is string && data.role.size() >= 2 && data.role.size() <= 80 &&
+        data.company is string && data.company.size() >= 2 && data.company.size() <= 100 &&
+        data.quote is string && data.quote.size() >= 10 && data.quote.size() <= 600 &&
+        data.rating is number && data.rating >= 1 && data.rating <= 5 &&
+        data.projectType is string && data.projectType.size() >= 2 && data.projectType.size() <= 80 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidGalleryPhoto(data, docId) {
+      return data.keys().hasAll(['id', 'title', 'category', 'caption', 'imageUrl', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'title', 'category', 'caption', 'imageUrl', 'createdAt', 'updatedAt']) &&
+        data.id == docId &&
+        isValidId(data.id) &&
+        data.title is string && data.title.size() >= 2 && data.title.size() <= 100 &&
+        data.category in ['Installations', 'Hardware', 'Control Rooms', 'Commercial', 'Residential'] &&
+        data.caption is string && data.caption.size() >= 2 && data.caption.size() <= 300 &&
+        data.imageUrl is string && data.imageUrl.size() >= 1 && data.imageUrl.size() <= 1000 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidInquiry(data, docId) {
+      return data.keys().hasAll(['id', 'ownerId', 'name', 'email', 'phone', 'serviceType', 'propertyType', 'message', 'status', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'ownerId', 'name', 'email', 'phone', 'serviceType', 'propertyType', 'message', 'status', 'createdAt', 'updatedAt']) &&
+        data.id == docId &&
+        isValidId(data.id) &&
+        isValidId(data.ownerId) &&
+        data.name is string && data.name.size() >= 2 && data.name.size() <= 80 &&
+        data.email is string && data.email.size() >= 5 && data.email.size() <= 120 &&
+        data.phone is string && data.phone.size() >= 6 && data.phone.size() <= 30 &&
+        data.serviceType is string && data.serviceType.size() >= 2 && data.serviceType.size() <= 80 &&
+        data.propertyType is string && data.propertyType.size() >= 2 && data.propertyType.size() <= 80 &&
+        data.message is string && data.message.size() >= 5 && data.message.size() <= 1500 &&
+        data.status in ['New', 'In Review', 'Quoted', 'Closed'] &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidUserProfile(data, userId) {
+      return data.keys().hasAll(['uid', 'displayName', 'email', 'phone', 'role', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['uid', 'displayName', 'email', 'phone', 'role', 'createdAt', 'updatedAt']) &&
+        data.uid == userId &&
+        isValidId(data.uid) &&
+        data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 80 &&
+        data.email is string && data.email.size() >= 5 && data.email.size() <= 120 &&
+        data.phone is string && data.phone.size() <= 30 &&
+        data.role in ['customer', 'admin'] &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidAdminEntry(data, adminId) {
+      return data.keys().hasAll(['uid', 'email', 'createdAt']) &&
+        data.keys().hasOnly(['uid', 'email', 'createdAt']) &&
+        data.uid == adminId &&
+        isValidId(data.uid) &&
+        data.email is string && data.email.size() >= 5 && data.email.size() <= 120 &&
+        data.createdAt is timestamp;
+    }
+
+    function isValidSiteSettings(data) {
+      return data.keys().hasAll(['companyName', 'promoBanner', 'phone', 'whatsapp', 'email', 'address', 'experienceYears', 'heroHeadline', 'heroSubheadline', 'aboutHeadline', 'aboutDescription', 'updatedAt']) &&
+        data.keys().hasOnly(['companyName', 'promoBanner', 'phone', 'whatsapp', 'email', 'address', 'experienceYears', 'heroHeadline', 'heroSubheadline', 'aboutHeadline', 'aboutDescription', 'heroImageUrl', 'aboutImageUrl', 'updatedAt']) &&
+        data.companyName is string && data.companyName.size() >= 2 && data.companyName.size() <= 60 &&
+        data.promoBanner is string && data.promoBanner.size() >= 2 && data.promoBanner.size() <= 160 &&
+        data.phone is string && data.phone.size() >= 5 && data.phone.size() <= 30 &&
+        data.whatsapp is string && data.whatsapp.size() >= 5 && data.whatsapp.size() <= 30 &&
+        data.email is string && data.email.size() >= 5 && data.email.size() <= 120 &&
+        data.address is string && data.address.size() >= 5 && data.address.size() <= 200 &&
+        data.experienceYears is number && data.experienceYears >= 0 && data.experienceYears <= 100 &&
+        data.heroHeadline is string && data.heroHeadline.size() >= 5 && data.heroHeadline.size() <= 160 &&
+        data.heroSubheadline is string && data.heroSubheadline.size() >= 10 && data.heroSubheadline.size() <= 400 &&
+        data.aboutHeadline is string && data.aboutHeadline.size() >= 5 && data.aboutHeadline.size() <= 160 &&
+        data.aboutDescription is string && data.aboutDescription.size() >= 10 && data.aboutDescription.size() <= 800 &&
+        (!('heroImageUrl' in data) || (data.heroImageUrl is string && data.heroImageUrl.size() <= 1000)) &&
+        (!('aboutImageUrl' in data) || (data.aboutImageUrl is string && data.aboutImageUrl.size() <= 1000)) &&
+        data.updatedAt is timestamp;
+    }
+
+    // --- Collection Rules ---
+
+    match /services/{serviceId} {
+      allow get: if isValidId(serviceId);
+      allow list: if true;
+      allow create: if isAdmin() && isValidId(serviceId) && isValidService(incoming(), serviceId) &&
+        incoming().createdAt == request.time && incoming().updatedAt == request.time;
+      allow update: if isAdmin() && isValidId(serviceId) && isValidService(incoming(), serviceId) &&
+        incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['title', 'description', 'icon', 'category', 'features', 'imageUrl', 'order', 'updatedAt']);
+      allow delete: if isAdmin() && isValidId(serviceId);
+    }
+
+    match /products/{productId} {
+      allow get: if isValidId(productId);
+      allow list: if true;
+      allow create: if isAdmin() && isValidId(productId) && isValidProduct(incoming(), productId) &&
+        incoming().createdAt == request.time && incoming().updatedAt == request.time;
+      allow update: if isAdmin() && isValidId(productId) && isValidProduct(incoming(), productId) &&
+        incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'brand', 'category', 'resolution', 'price', 'description', 'specs', 'imageUrl', 'inStock', 'featured', 'updatedAt']);
+      allow delete: if isAdmin() && isValidId(productId);
+    }
+
+    match /brands/{brandId} {
+      allow get: if isValidId(brandId);
+      allow list: if true;
+      allow create: if isAdmin() && isValidId(brandId) && isValidBrand(incoming(), brandId) &&
+        incoming().createdAt == request.time && incoming().updatedAt == request.time;
+      allow update: if isAdmin() && isValidId(brandId) && isValidBrand(incoming(), brandId) &&
+        incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'tagline', 'description', 'imageUrl', 'country', 'warrantyYears', 'updatedAt']);
+      allow delete: if isAdmin() && isValidId(brandId);
+    }
+
+    match /projects/{projectId} {
+      allow get: if isValidId(projectId);
+      allow list: if true;
+      allow create: if isAdmin() && isValidId(projectId) && isValidProject(incoming(), projectId) &&
+        incoming().createdAt == request.time && incoming().updatedAt == request.time;
+      allow update: if isAdmin() && isValidId(projectId) && isValidProject(incoming(), projectId) &&
+        incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['title', 'industry', 'location', 'camerasInstalled', 'completionYear', 'summary', 'outcomeMetric', 'imageUrl', 'updatedAt']);
+      allow delete: if isAdmin() && isValidId(projectId);
+    }
+
+    match /testimonials/{testimonialId} {
+      allow get: if isValidId(testimonialId);
+      allow list: if true;
+      allow create: if isAdmin() && isValidId(testimonialId) && isValidTestimonial(incoming(), testimonialId) &&
+        incoming().createdAt == request.time && incoming().updatedAt == request.time;
+      allow update: if isAdmin() && isValidId(testimonialId) && isValidTestimonial(incoming(), testimonialId) &&
+        incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['clientName', 'role', 'company', 'quote', 'rating', 'projectType', 'updatedAt']);
+      allow delete: if isAdmin() && isValidId(testimonialId);
+    }
+
+    match /gallery/{photoId} {
+      allow get: if isValidId(photoId);
+      allow list: if true;
+      allow create: if isAdmin() && isValidId(photoId) && isValidGalleryPhoto(incoming(), photoId) &&
+        incoming().createdAt == request.time && incoming().updatedAt == request.time;
+      allow update: if isAdmin() && isValidId(photoId) && isValidGalleryPhoto(incoming(), photoId) &&
+        incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['title', 'category', 'caption', 'imageUrl', 'updatedAt']);
+      allow delete: if isAdmin() && isValidId(photoId);
+    }
+
+    match /inquiries/{inquiryId} {
+      allow get: if isValidId(inquiryId) && isVerified() && (existing().ownerId == request.auth.uid || isAdmin());
+      allow list: if isVerified() && (resource.data.ownerId == request.auth.uid || isBootstrappedAdminEmail());
+      allow create: if isVerified() && isValidId(inquiryId) && isValidInquiry(incoming(), inquiryId) &&
+        incoming().ownerId == request.auth.uid &&
+        incoming().status == 'New' &&
+        incoming().createdAt == request.time && incoming().updatedAt == request.time;
+      allow update: if isAdmin() && isValidId(inquiryId) && isValidInquiry(incoming(), inquiryId) &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']);
+      allow delete: if isAdmin() && isValidId(inquiryId);
+    }
+
+    match /users/{userId} {
+      allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
+      allow list: if isVerified() && (resource.data.uid == request.auth.uid || isBootstrappedAdminEmail());
+      allow create: if isOwner(userId) && isValidId(userId) && isValidUserProfile(incoming(), userId) &&
+        incoming().role == 'customer' &&
+        incoming().createdAt == request.time && incoming().updatedAt == request.time;
+      allow update: if isValidId(userId) && isValidUserProfile(incoming(), userId) &&
+        incoming().uid == existing().uid &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          isAdmin() ||
+          (isOwner(userId) && incoming().role == existing().role &&
+           incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'phone', 'updatedAt']))
+        );
+      allow delete: if isAdmin() && isValidId(userId);
+    }
+
+    match /admins/{adminId} {
+      allow get: if isValidId(adminId) && (isOwner(adminId) || isAdmin());
+      allow list: if isBootstrappedAdminEmail();
+      allow create: if isAdmin() && isValidId(adminId) && isValidAdminEntry(incoming(), adminId) &&
+        incoming().createdAt == request.time;
+      allow update: if false;
+      allow delete: if isAdmin() && isValidId(adminId);
+    }
+
+    match /siteSettings/{settingId} {
+      allow get: if isValidId(settingId);
+      allow list: if true;
+      allow create: if isAdmin() && isValidId(settingId) && isValidSiteSettings(incoming()) &&
+        incoming().updatedAt == request.time;
+      allow update: if isAdmin() && isValidId(settingId) && isValidSiteSettings(incoming()) &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'companyName', 'promoBanner', 'phone', 'whatsapp', 'email', 'address',
+          'experienceYears', 'heroHeadline', 'heroSubheadline', 'aboutHeadline', 'aboutDescription',
+          'heroImageUrl', 'aboutImageUrl', 'updatedAt'
+        ]);
+      allow delete: if false;
+    }
+  }
+}

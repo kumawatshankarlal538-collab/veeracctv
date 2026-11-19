@@ -1,0 +1,229 @@
+{
+  "entities": {
+    "Service": {
+      "title": "Service",
+      "description": "CCTV and security service offering managed by admin.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "description": { "type": "string", "minLength": 10, "maxLength": 600 },
+        "icon": { "type": "string", "minLength": 2, "maxLength": 40 },
+        "category": { "type": "string", "minLength": 2, "maxLength": 60 },
+        "features": { "type": "array" },
+        "imageUrl": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "order": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "description", "icon", "category", "features", "imageUrl", "order", "createdAt", "updatedAt"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "CCTV camera, NVR/DVR, or security kit in the catalog.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "brand": { "type": "string", "minLength": 2, "maxLength": 60 },
+        "category": {
+          "type": "string",
+          "enum": ["Dome Camera", "Bullet Camera", "PTZ Camera", "NVR / DVR", "Complete Kit", "Access Control"]
+        },
+        "resolution": { "type": "string", "minLength": 2, "maxLength": 40 },
+        "price": { "type": "number" },
+        "description": { "type": "string", "minLength": 10, "maxLength": 1000 },
+        "specs": { "type": "array" },
+        "imageUrl": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "inStock": { "type": "boolean" },
+        "featured": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "brand", "category", "resolution", "price", "description", "specs", "imageUrl", "inStock", "featured", "createdAt", "updatedAt"]
+    },
+    "Brand": {
+      "title": "Brand",
+      "description": "Authorized CCTV hardware brand partner.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "minLength": 2, "maxLength": 60 },
+        "tagline": { "type": "string", "minLength": 2, "maxLength": 140 },
+        "description": { "type": "string", "minLength": 5, "maxLength": 500 },
+        "imageUrl": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "country": { "type": "string", "minLength": 2, "maxLength": 60 },
+        "warrantyYears": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "tagline", "description", "imageUrl", "country", "warrantyYears", "createdAt", "updatedAt"]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "Completed CCTV installation project or industry deployment.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "industry": {
+          "type": "string",
+          "enum": ["Hotel", "Property", "Distribution", "Schools", "Industrial", "Retail"]
+        },
+        "location": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "camerasInstalled": { "type": "number" },
+        "completionYear": { "type": "string", "minLength": 4, "maxLength": 10 },
+        "summary": { "type": "string", "minLength": 10, "maxLength": 800 },
+        "outcomeMetric": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "imageUrl": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "industry", "location", "camerasInstalled", "completionYear", "summary", "outcomeMetric", "imageUrl", "createdAt", "updatedAt"]
+    },
+    "Testimonial": {
+      "title": "Testimonial",
+      "description": "Verified customer review and surveillance outcome.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "clientName": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "role": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "company": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "quote": { "type": "string", "minLength": 10, "maxLength": 600 },
+        "rating": { "type": "number" },
+        "projectType": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "clientName", "role", "company", "quote", "rating", "projectType", "createdAt", "updatedAt"]
+    },
+    "GalleryPhoto": {
+      "title": "GalleryPhoto",
+      "description": "Photo asset managed in the admin media gallery.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "category": {
+          "type": "string",
+          "enum": ["Installations", "Hardware", "Control Rooms", "Commercial", "Residential"]
+        },
+        "caption": { "type": "string", "minLength": 2, "maxLength": 300 },
+        "imageUrl": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "category", "caption", "imageUrl", "createdAt", "updatedAt"]
+    },
+    "Inquiry": {
+      "title": "Inquiry",
+      "description": "Customer quote or consultation inquiry containing PII.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "email": { "type": "string", "minLength": 5, "maxLength": 120 },
+        "phone": { "type": "string", "minLength": 6, "maxLength": 30 },
+        "serviceType": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "propertyType": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "message": { "type": "string", "minLength": 5, "maxLength": 1500 },
+        "status": { "type": "string", "enum": ["New", "In Review", "Quoted", "Closed"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "ownerId", "name", "email", "phone", "serviceType", "propertyType", "message", "status", "createdAt", "updatedAt"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Authenticated user account profile containing PII.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "email": { "type": "string", "minLength": 5, "maxLength": 120 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "role": { "type": "string", "enum": ["customer", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "displayName", "email", "phone", "role", "createdAt", "updatedAt"]
+    },
+    "AdminEntry": {
+      "title": "AdminEntry",
+      "description": "Trusted admin role registry entry.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "email": { "type": "string", "minLength": 5, "maxLength": 120 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "createdAt"]
+    },
+    "SiteSettings": {
+      "title": "SiteSettings",
+      "description": "Global site branding, contact details, and homepage hero/about configuration.",
+      "type": "object",
+      "properties": {
+        "companyName": { "type": "string", "minLength": 2, "maxLength": 60 },
+        "promoBanner": { "type": "string", "minLength": 2, "maxLength": 160 },
+        "phone": { "type": "string", "minLength": 5, "maxLength": 30 },
+        "whatsapp": { "type": "string", "minLength": 5, "maxLength": 30 },
+        "email": { "type": "string", "minLength": 5, "maxLength": 120 },
+        "address": { "type": "string", "minLength": 5, "maxLength": 200 },
+        "experienceYears": { "type": "number" },
+        "heroHeadline": { "type": "string", "minLength": 5, "maxLength": 160 },
+        "heroSubheadline": { "type": "string", "minLength": 10, "maxLength": 400 },
+        "aboutHeadline": { "type": "string", "minLength": 5, "maxLength": 160 },
+        "aboutDescription": { "type": "string", "minLength": 10, "maxLength": 800 },
+        "heroImageUrl": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "aboutImageUrl": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["companyName", "promoBanner", "phone", "whatsapp", "email", "address", "experienceYears", "heroHeadline", "heroSubheadline", "aboutHeadline", "aboutDescription", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/services/{serviceId}": {
+      "schema": { "$ref": "#/entities/Service" },
+      "description": "Publicly readable CCTV services catalog, editable by admins."
+    },
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Publicly readable CCTV products catalog, editable by admins."
+    },
+    "/brands/{brandId}": {
+      "schema": { "$ref": "#/entities/Brand" },
+      "description": "Publicly readable authorized CCTV brands, editable by admins."
+    },
+    "/projects/{projectId}": {
+      "schema": { "$ref": "#/entities/Project" },
+      "description": "Publicly readable completed CCTV projects, editable by admins."
+    },
+    "/testimonials/{testimonialId}": {
+      "schema": { "$ref": "#/entities/Testimonial" },
+      "description": "Publicly readable verified client testimonials, editable by admins."
+    },
+    "/gallery/{photoId}": {
+      "schema": { "$ref": "#/entities/GalleryPhoto" },
+      "description": "Publicly readable installation & hardware photo gallery, editable by admins."
+    },
+    "/inquiries/{inquiryId}": {
+      "schema": { "$ref": "#/entities/Inquiry" },
+      "description": "PII-isolated quote and consultation inquiries."
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "PII-isolated user profiles."
+    },
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/AdminEntry" },
+      "description": "Admin role registry."
+    },
+    "/siteSettings/{settingId}": {
+      "schema": { "$ref": "#/entities/SiteSettings" },
+      "description": "Publicly readable site settings, editable by admins."
+    }
+  }
+}

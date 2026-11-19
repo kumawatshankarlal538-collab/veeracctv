@@ -1,0 +1,8 @@
+{
+  "name": "VEERA CCTV — Surveillance & Security Solutions",
+  "description": "Professional CCTV installation, 4K surveillance systems, access control, multi-brand hardware catalog, and security management portal by VEERA CCTV.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
